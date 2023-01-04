@@ -1,24 +1,17 @@
 const cdk = require('aws-cdk-lib');
-const sns = require('aws-cdk-lib/aws-sns');
-const subs = require('aws-cdk-lib/aws-sns-subscriptions');
-const sqs = require('aws-cdk-lib/aws-sqs');
+const { CodePipeline, CodePipelineSource, ShellStep } = require('aws-cdk-lib/pipelines');
 
-class CdkFolderStack extends cdk.Stack {
-  /**
-   * @param {cdk.App} scope
-   * @param {string} id
-   * @param {cdk.StackProps=} props
-   */
+ class CdkFolderStack extends cdk.Stack {
   constructor(scope, id, props) {
     super(scope, id, props);
 
-    const queue = new sqs.Queue(this, 'CdkFolderQueue', {
-      visibilityTimeout: cdk.Duration.seconds(300)
+    const pipeline = new CodePipeline(this, 'Pipeline', {
+      pipelineName: 'MyPipeline',
+      synth: new ShellStep('Synth', {
+        input: CodePipelineSource.gitHub('Mythreya-lirctek/Cdk-demo', 'main'),
+        commands: ['npx cdk synth']
+      })
     });
-
-    const topic = new sns.Topic(this, 'CdkFolderTopic');
-
-    topic.addSubscription(new subs.SqsSubscription(queue));
   }
 }
 
